@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *
+        {
+            margin: 0;
+            padding: 0;
+        }
+        #rollImg
+        {
+            position: relative;
+            overflow: hidden;
+            margin: auto;
+        }
+        #imgCon,#uls,#left,#right
+        {
+            position: absolute;
+        }
+        #left
+        {
+            left: 5px;
+        }
+        #right
+        {
+            right: 5px;
+        }
+        li
+        {
+            width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            border: 1px solid #FF0000;
+            background-color: rgba(255,255,255,0.4);
+            margin-left: 10px;
+            float: left;
+        }
+        #uls
+        {
+            list-style: none;
+            bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="rollImg">
+    <div id="imgCon"></div>
+    <ul id="uls"></ul>
+</div>
+<script>
+
+    var imgArr=["img/a.jpg","img/b.jpg","img/c.jpg","img/d.jpg","img/e.jpg"];
+
+    var time=200;
+
+    var position=0;
+
+    var dic="";
+
+    var bool=false;
+
+    var auto=true;
+
+    var preLi;
+
+    var rollImg=document.getElementById("rollImg");
+
+    var imgCon=document.getElementById("imgCon");
+
+    var uls=document.getElementById("uls");
+
+    var left;
+
+    var right;
+
+    const WIDTH=960;
+
+    const HEIGHT=320;
+
+    loadImg();
+
+    setInterval(animation,16);
+
+    function loadImg() {
+        left=new Image();
+        left.addEventListener("load",loadHandler);
+        left.src="img/left.png";
+        left.id="left";
+    }
+
+    function loadHandler(e) {
+        e=e || window.event;
+        this.removeEventListener("load",loadHandler);
+        rollImg.appendChild(this);
+        if(this===left){
+            right=new Image();
+            right.addEventListener("load",loadHandler);
+            right.src="img/right.png";
+            right.id="right";
+        }else{
+
+            initRollImg();
+        }
+    }
+
+    function initRollImg() {
+        rollImg.style.width=WIDTH+"px";
+        rollImg.style.height=HEIGHT+"px";
+        left.style.top=right.style.top=(HEIGHT-left.offsetHeight)/2+"px";
+        var img=new Image();
+        img.src=imgArr[0];
+        img.style.width=WIDTH+"px";
+        img.style.height=HEIGHT+"px";
+        imgCon.appendChild(img);
+        for(var i=0;i<imgArr.length;i++){
+            var li=document.createElement("li");
+            li.n=i;
+            li.textContent = i;
+            li.style.color = "#fff";
+            li.style.textAlign = "center";
+            li.style.lineHeight = "16px";
+            li.addEventListener("click",liClickHandler);
+            uls.appendChild(li);
+        }
+        uls.style.left=(WIDTH-uls.offsetWidth)/2+"px";
+        left.addEventListener("click",leftClickHandler);
+        right.addEventListener("click",rightClickHandler);
+        rollImg.addEventListener("mouseenter",mouseEnterHandler);
+        rollImg.addEventListener("mouseleave",mouseLeaveHandler);
+        changeLi();
+    }
+
+    function imgLeftMove() {
+        position++;
+        if (position > imgArr.length - 1) {
+            position = 0;
+        }
+        dic = "left";
+        createImg();
+        bool = true;
+        changeLi();
+    }
+    function createImg() {
+        imgCon.style.width=WIDTH*2+"px";
+        var img=new Image();
+        img.src=imgArr[position];
+        if(dic==="left"){
+            imgCon.appendChild(img);
+            imgCon.style.left="0px";
+        }else if(dic==="right"){
+            imgCon.insertBefore(img,imgCon.firstElementChild);
+            imgCon.style.left=-WIDTH+"px";
+        }
+        img.style.width=WIDTH+"px";
+        img.style.height=HEIGHT+"px";
+    }
+
+    function changeLi() {
+        if(preLi){
+            preLi.style.backgroundColor="rgba(255,255,255,0.4)"
+        }
+        uls.children[position].style.backgroundColor="rgba(255,0,0,0.4)";
+        preLi=uls.children[position];
+    }
+
+    function mouseEnterHandler(e) {
+        e=e || window.event;
+        auto=false;
+    }
+
+    function mouseLeaveHandler(e) {
+        e=e || window.event;
+        auto=true;
+    }
+
+    function leftClickHandler(e) {
+        e=e || window.event;
+        if(bool) return;
+        position--;
+        if(position<0){
+            position=imgArr.length-1;
+        }
+        dic="right";
+        createImg();
+        bool=true;
+        changeLi();
+    }
+
+    function rightClickHandler(e) {
+        e=e || window.event;
+        if(bool) return;
+        imgLeftMove();
+    }
+
+    function liClickHandler(e) {
+        e=e || window.event;
+        if(bool) return;
+        if(this.n<position){
+            dic="right";
+        }else if(this.n>position){
+            dic="left";
+        }else{
+            return;
+        }
+        position=this.n;
+        createImg();
+        bool=true;
+        changeLi();
+    }
+
+    function animation() {
+        if(auto){
+            time--;
+            if(time<=0){
+                imgLeftMove();
+                time=200;
+            }
+        }else{
+            time=200;
+        }
+        if(!bool) return;
+        if(dic==="left"){
+            imgCon.style.left=imgCon.offsetLeft-20+"px";
+            if(imgCon.offsetLeft<=-WIDTH){
+                imgCon.removeChild(imgCon.firstElementChild);
+                imgCon.style.left="0px";
+                bool=false;
+            }
+        }else if(dic==="right"){
+            imgCon.style.left=imgCon.offsetLeft+20+"px";
+            if(imgCon.offsetLeft>=0){
+                imgCon.removeChild(imgCon.lastElementChild);
+                bool=false;
+            }
+        }
+    }
+</script>
+</body>
+</html>
